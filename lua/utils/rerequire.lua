@@ -9,6 +9,11 @@ local function getModulePath(module)
 	return "lua/" .. module:gsub("%.", "/") .. ".lua"
 end
 
+local function getModuleName(module)
+	local pos = module:find("%.[^%.]*$")
+	return pos and module:sub(pos + 1) or module
+end
+
 local rerequire = {
 	require = require,
 	__call = function(self, module)
@@ -24,11 +29,12 @@ local rerequire = {
 		modules = modules or loaded
 		for module, modtime in pairs(loaded) do
 			if modtime < getModtime(getModulePath(module)) then
-				_G[module] = self(module)
-				if callbacks[module] then
-					callbacks[module]()
+				local name = getModuleName(module)
+				_G[name] = self(module)
+				if callbacks[name] then
+					callbacks[name]()
 				end
-				print("Hot-reloaded:" .. module)
+				print("Hot-reloaded:" .. name)
 			end
 		end
 	end,
