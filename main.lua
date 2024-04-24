@@ -1,15 +1,8 @@
 package.path = package.path .. ";.\\lua\\?.lua;.\\lua\\utils\\?.lua"
 local require = require("utils.rerequire")
-local Sprite = require("utils.sprite")
 
--- NOTE: locals aren't very hot-reloadable
-Colors = require("Colors")
-Level = require("Level")
--- Components
-Vector = require("components.Vector")
--- Systems
-CameraSystem = require("systems.CameraSystem")
-TileRenderer = require("systems.TileRenderer")
+-- NOTE: Hot-reloadable module list
+require("load")
 
 -- NOTE: global game object, stores all the state
 Game = {
@@ -41,12 +34,13 @@ function love.load()
 	loadAssets()
 end
 
-local reload_time = 0
+local reloadTime = 0
+local reloadActive = type(require) == "table" and require.reload ~= nil
 function love.update(dt)
-	reload_time = reload_time + dt
-	if reload_time > 0.2 then
-		reload_time = 0
-		if require.reload then
+	reloadTime = reloadTime + dt
+	if reloadTime > 0.2 then
+		reloadTime = 0
+		if reloadActive then
 			require:reload()
 		end
 	end
